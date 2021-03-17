@@ -1,19 +1,26 @@
 <div class="row">
   <div class="col-12 mt-2">
+    <div class="row">
+      <button [routerLink]="['user/' + 0]" class="col-12 my-5 btn btn-warning"><i class="fa fa-plus"></i>
+      Add new</button>
+    </div>
+    <div class="row mb-3">
+      <h4 class="mr-3">Search by name</h4>
+      <div class="form-group">
+        <input type="text" [(ngModel)]="phrase" class="form-control" placeholder="Search">
+      </div>
+    </div>
+
     <h2>User List</h2>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Address</th>
-          <th>Active</th>
+          <th class="sortedHeads" *ngFor="let col of cols" (click)="onChangeSort(col)">{{col}}</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let user of users$ | async">
+        <tr *ngFor="let user of users$ | async | filter:filterKey:phrase | sort:sortKey">
           <td>{{ user.id }}</td>
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
@@ -24,7 +31,7 @@
               <button [routerLink]="['user/' + user.id]" class="btn btn-info">
                 <i class="fa fa-pencil"></i>
               </button>
-              <button class="btn btn-danger">
+              <button (click)="onDelete(user)" class="btn btn-danger">
                 <i class="fa fa-trash"></i>
               </button>
             </div>
@@ -34,3 +41,4 @@
     </table>
   </div>
 </div>
+

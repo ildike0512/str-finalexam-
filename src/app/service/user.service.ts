@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { User } from '../model/user';
 
 @Injectable({
@@ -9,17 +10,19 @@ import { User } from '../model/user';
 export class UserService {
 
   endpoint: string = 'http://localhost:3000/users';
+  list$: BehaviorSubject<User[]> = new BehaviorSubject<User[]>([]);
 
   constructor(
-    private http: HttpClient
-  ) { }
+    private http: HttpClient,
+    private toastr: ToastrService
+  ) { this.getAll() }
 
   /**
    * Get all users from the database.
    * @returns on observable with all users.
    */
-  getAll(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.endpoint}`);
+  getAll(): void {
+    this.http.get<User[]>(this.endpoint).subscribe((users) => this.list$.next(users));
   }
 
   /**
@@ -35,14 +38,25 @@ export class UserService {
    * Delete a user from the database.
    * The method is: this.http.delete
    */
-
+  delete(user: User): void {
+    if (!confirm('Is this really what you want?')) {
+      return
+    } else {
+      this.http.delete(`${this.endpoint}/${user.id}`).subscribe(
+        () => this.getAll()
+      )
+      this.toastr.warning('You have deleted this user', 'Deleted', { timeOut: 5000 });
+    }
+  }
 
 
   /**
    * Create a user in the database.
    * The method is: this.http.post
    */
-
+  create(user: User): Observable<User> {
+    return this.http.post<User>(this.endpoint, user);
+  }
 
 
   /**
@@ -50,4 +64,8 @@ export class UserService {
    * The method is: this.http.patch
    */
 
+  update(user: User): Observable<User> {
+    return this.http.patch<User>(`${this.endpoint}/${user.id}`, user);
+  }
 }
+
